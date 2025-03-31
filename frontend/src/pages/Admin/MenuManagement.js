@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "../../styles/admin/AdminControl.css";
-import api from "../../services/api"; // Import the api.js file
+import api from "../../services/api";
 
 const MenuManagement = () => {
   const [menuItems, setMenuItems] = useState([]);
@@ -11,9 +11,13 @@ const MenuManagement = () => {
     category: "",
     picture: "",
     description: "",
-    isAvailable: true,
+    available: true,
+    role: "",
+    staffPrice: "",
+    patientPrice: "",
+    dietitianPrice: ""
   });
-  const [editItem, setEditItem] = useState(null); // State to hold the item being edited
+  const [editItem, setEditItem] = useState(null);
 
   useEffect(() => {
     fetchMenuItems();
@@ -39,7 +43,11 @@ const MenuManagement = () => {
           category: "",
           picture: "",
           description: "",
-          isAvailable: true,
+          available: true,
+          role: "",
+          staffPrice: "",
+          patientPrice: "",
+          dietitianPrice: ""
         });
         setShowAddForm(false);
       } catch (error) {
@@ -58,19 +66,15 @@ const MenuManagement = () => {
   };
 
   const handleEdit = (item) => {
-    setEditItem(item); // Set the item to be edited
-    setShowAddForm(true); // Show the form for editing
+    setEditItem(item);
+    setShowAddForm(true);
   };
 
   const handleUpdate = async () => {
     if (editItem.name && editItem.price && editItem.category) {
       try {
         const response = await api.put(`/menu-items/${editItem.id}`, editItem);
-        setMenuItems(
-          menuItems.map((item) =>
-            item.id === editItem.id ? response.data : item
-          )
-        );
+        setMenuItems(menuItems.map((item) => (item.id === editItem.id ? response.data : item)));
         setEditItem(null);
         setShowAddForm(false);
       } catch (error) {
@@ -91,6 +95,8 @@ const MenuManagement = () => {
             <th>Upload Picture</th>
             <th>Price</th>
             <th>Category</th>
+            <th>Role</th>
+            <th>Available</th>
             <th>Edit</th>
             <th>Remove</th>
           </tr>
@@ -101,30 +107,20 @@ const MenuManagement = () => {
               <td>{item.name}</td>
               <td>
                 {item.picture ? (
-                  <img
-                    src={item.picture}
-                    alt={item.name}
-                    style={{
-                      width: "50px",
-                      height: "50px",
-                      objectFit: "cover",
-                    }}
-                  />
+                  <img src={item.picture} alt={item.name} style={{ width: "50px", height: "50px", objectFit: "cover" }} />
                 ) : (
                   "No Image"
                 )}
               </td>
               <td>{item.price}</td>
               <td>{item.category}</td>
+              <td>{item.role || "N/A"}</td>
+              <td>{item.available ? "Yes" : "No"}</td>
               <td>
-                <button className="edit-btn" onClick={() => handleEdit(item)}>
-                  ✏️
-                </button>
+                <button className="edit-btn" onClick={() => handleEdit(item)}>✏️</button>
               </td>
               <td>
-                <button className="remove-btn" onClick={() => handleRemove(item.id)}>
-                  🗑️
-                </button>
+                <button className="remove-btn" onClick={() => handleRemove(item.id)}>🗑️</button>
               </td>
             </tr>
           ))}
@@ -169,6 +165,17 @@ const MenuManagement = () => {
               }
             />
             <input
+              type="text"
+              name="role"
+              placeholder="Role"
+              value={editItem ? editItem.role : newItem.role}
+              onChange={(e) =>
+                editItem
+                  ? setEditItem({ ...editItem, role: e.target.value })
+                  : setNewItem({ ...newItem, role: e.target.value })
+              }
+            />
+            <input
               type="file"
               name="picture"
               onChange={(e) => {
@@ -182,6 +189,57 @@ const MenuManagement = () => {
                 if (file) reader.readAsDataURL(file);
               }}
             />
+            <label>
+              Available:
+              <input
+                type="checkbox"
+                checked={editItem ? editItem.available : newItem.available}
+                onChange={(e) =>
+                  editItem
+                    ? setEditItem({ ...editItem, available: e.target.checked })
+                    : setNewItem({ ...newItem, available: e.target.checked })
+                }
+              />
+            </label>
+            {/* Price Inputs for Staff, Patient, and Dietitian */}
+            <div className="price-inputs">
+            staffPrice
+              <input
+                type="number"
+                name="staffPrice"
+                placeholder="Staff Price"
+                value={editItem ? editItem.staffPrice : newItem.staffPrice}
+                onChange={(e) =>
+                  editItem
+                    ? setEditItem({ ...editItem, staffPrice: e.target.value })
+                    : setNewItem({ ...newItem, staffPrice: e.target.value })
+                }
+              />
+              patientPrice
+              <input
+                type="number"
+                name="patientPrice"
+                placeholder="Patient Price"
+                value={editItem ? editItem.patientPrice : newItem.patientPrice}
+                onChange={(e) =>
+                  editItem
+                    ? setEditItem({ ...editItem, patientPrice: e.target.value })
+                    : setNewItem({ ...newItem, patientPrice: e.target.value })
+                }
+              />
+              dietitianPrice
+              <input
+                type="number"
+                name="dietitianPrice"
+                placeholder="Dietitian Price"
+                value={editItem ? editItem.dietitianPrice : newItem.dietitianPrice}
+                onChange={(e) =>
+                  editItem
+                    ? setEditItem({ ...editItem, dietitianPrice: e.target.value })
+                    : setNewItem({ ...newItem, dietitianPrice: e.target.value })
+                }
+              />
+            </div>
             <button className="save-btn" onClick={editItem ? handleUpdate : handleAdd}>
               {editItem ? "Update" : "Save"}
             </button>
